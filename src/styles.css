@@ -608,6 +608,28 @@ textarea {
   margin: 0;
 }
 
+.browse-history {
+  display: grid;
+  gap: 16px;
+}
+
+.browse-history__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.browse-history__header h2 {
+  margin: 0;
+}
+
+.browse-history__header .secondary-button {
+  min-height: 34px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+}
+
 .empty-state,
 .global-error {
   display: grid;

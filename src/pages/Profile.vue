@@ -55,6 +55,22 @@
       </div>
       <EmptyState v-else title="还没有发布物品" description="发布一件闲置后会出现在这里" mark="物" />
     </section>
+
+    <section class="browse-history">
+      <div class="browse-history__header">
+        <h2>最近浏览</h2>
+        <button v-if="browsedItems.length" class="secondary-button" type="button" @click="clearHistory">清空足迹</button>
+      </div>
+      <div v-if="browsedItems.length" class="waterfall waterfall--compact">
+        <ItemCard
+          v-for="entry in browsedItems"
+          :key="entry.item.id"
+          :item="entry.item"
+          :owner="entry.owner"
+        />
+      </div>
+      <EmptyState v-else title="暂无浏览记录" description="浏览物品详情后会自动记录在这里" mark="迹" />
+    </section>
   </section>
 </template>
 
@@ -67,10 +83,12 @@ import ItemCard from '@/components/common/ItemCard.vue';
 import UserBrief from '@/components/common/UserBrief.vue';
 import { ItemStatus } from '@/constants/item';
 import { useAuth } from '@/hooks/useAuth';
+import { useBrowseHistoryStore } from '@/stores/browseHistoryStore';
 import { useItemStore } from '@/stores/itemStore';
 
 const { currentUser, users, login, updateProfile } = useAuth();
 const itemStore = useItemStore();
+const browseHistoryStore = useBrowseHistoryStore();
 const selectedUserId = ref('');
 
 const form = reactive({
@@ -110,5 +128,20 @@ const switchUser = async () => {
   if (selectedUserId.value) {
     await login(selectedUserId.value);
   }
+};
+
+const browsedItems = computed(() =>
+  browseHistoryStore.records
+    .map((record) => {
+      const item = itemStore.items.find((i) => i.id === record.itemId);
+      if (!item) return null;
+      const owner = users.value.find((u) => u.id === item.user_id);
+      return { item, owner };
+    })
+    .filter(Boolean) as { item: import('@/models/item').Item; owner?: import('@/models/user').User }[],
+);
+
+const clearHistory = () => {
+  browseHistoryStore.clear();
 };
 </script>

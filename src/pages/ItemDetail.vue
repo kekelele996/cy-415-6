@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 
 import EmptyState from '@/components/common/EmptyState.vue';
@@ -65,6 +65,7 @@ import UserBrief from '@/components/common/UserBrief.vue';
 import { ExchangeStatus } from '@/constants/exchange';
 import { ItemStatus } from '@/constants/item';
 import { useAuthStore } from '@/stores/authStore';
+import { useBrowseHistoryStore } from '@/stores/browseHistoryStore';
 import { useExchangeStore } from '@/stores/exchangeStore';
 import { useItemStore } from '@/stores/itemStore';
 import { formatCondition, formatDate, formatItemStatus, statusToneClass } from '@/utils/formatters';
@@ -74,10 +75,15 @@ const route = useRoute();
 const itemStore = useItemStore();
 const authStore = useAuthStore();
 const exchangeStore = useExchangeStore();
+const browseHistoryStore = useBrowseHistoryStore();
 
 const item = computed(() => itemStore.items.find((entry) => entry.id === route.params.id));
 const owner = computed(() => authStore.users.find((user) => user.id === item.value?.user_id));
 const isMine = computed(() => authStore.currentUser?.id === item.value?.user_id);
+
+watch(item, (val) => {
+  if (val) browseHistoryStore.record(val.id);
+}, { immediate: true });
 const ownAvailableItems = computed(() =>
   authStore.currentUser ? itemStore.availableMyItems(authStore.currentUser.id) : [],
 );
